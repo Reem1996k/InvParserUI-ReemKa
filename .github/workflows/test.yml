@@ -6,27 +6,37 @@ on:
     branches:
      - main
 
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: 'Browser to run tests on'
+        required: true
+        default: 'chrome'
+        type: choice
+        options:
+        - chrome
+        - firefox
+      resolution:
+        description: 'Screen resolution'
+        required: true
+        default: 'desktop'
+        type: choice
+        options:
+        - desktop
+        - tablet
+        - mobile  
+  
+
 jobs:
-  playwright-matrix-tests:
+  playwright-tests:
     runs-on: ubuntu-latest
-    
-    strategy:
-      matrix:
-        browser: [chrome, firefox]
-        resolution: 
-          - { name: 'desktop', width: 1920, height: 1080 }
-          - { name: 'tablet', width: 768, height: 1024 }
-          - { name: 'mobile', width: 375, height: 667 }
-      fail-fast: false  # Continue other jobs even if one fails
-    
-    name: Test ${{ matrix.browser }} - ${{ matrix.resolution.name }}
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
       with:
-        fetch-depth: 1
-        repository: Reem1996k/InvParserUI-ReemKa
+        fetch-depth: 1  # Fetch only the latest commit to speed up the checkout process
+        repository: Reem1996k/InvParserUI-ReemKa  # Replace with your UI testing repo
       
     - name: Set up Python
       uses: actions/setup-python@v4
@@ -40,16 +50,11 @@ jobs:
         
     - name: Install Playwright browsers
       run: |
-        playwright install --with-deps ${{ matrix.browser }}
+        playwright install --with-deps
         
     - name: Run Playwright tests
       env:
         HEADLESS: true
-        BROWSER: ${{ matrix.browser }}
-        SCREEN_WIDTH: ${{ matrix.resolution.width }}
-        SCREEN_HEIGHT: ${{ matrix.resolution.height }}
         APP_URL: https://lichenlike-kellee-autocratically.ngrok-free.dev
-        TEST_NAME: ${{ matrix.browser }}-${{ matrix.resolution.name }}
       run: |
-        pytest tests/ -v --tb=short
-        
+        pytest tests/ -v
