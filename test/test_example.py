@@ -1,11 +1,19 @@
 import os
 import unittest
+import playwright
 from playwright.sync_api import sync_playwright
 from pages import LoginPage, DashboardPage, UploadPage, InvoicesPage, InvoiceDetailPage
 
 # Path to test invoice file
 TEST_INVOICE_PATH = r"C:\Users\רים\ReemKartawe_repo\invoices_sample\invoice_Anthony_Jacobs_37594.pdf"
 
+from playwright.sync_api import sync_playwright
+import os
+
+headless = os.getenv('HEADLESS', 'false').lower() == 'true'
+browser = playwright.chromium.launch(headless=headless)
+page = browser.new_page()
+APP_URL = os.getenv('APP_URL', 'http://localhost:3000')
 
 class TestInvParserUI(unittest.TestCase):
     """Test suite for Invoice Parser UI using Page Object Model."""
@@ -14,7 +22,7 @@ class TestInvParserUI(unittest.TestCase):
     def setUpClass(cls):
         """Set up the browser once for all tests in this class."""
         cls.playwright = sync_playwright().start()
-        cls.browser = cls.playwright.chromium.launch(headless=False)  # headless=False to see the browser
+        cls.browser = cls.playwright.chromium.launch(headless=headless)  # headless=False to see the browser
 
     @classmethod
     def tearDownClass(cls):
