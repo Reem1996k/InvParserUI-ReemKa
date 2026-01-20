@@ -52,6 +52,10 @@ class LoginPage(BasePage):
             username: Username (default: "admin")
             password: Password (default: "admin")
         """
+        try:
+            self.page.get_by_role("button", name="Visit Site").click()
+        except:
+            print("Ngrok warning page was not loaded")
         self.enter_username(username)
         self.enter_password(password)
         self.click_sign_in()
