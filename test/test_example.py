@@ -1,19 +1,19 @@
 import os
 import unittest
-import playwright
 from playwright.sync_api import sync_playwright
 from pages import LoginPage, DashboardPage, UploadPage, InvoicesPage, InvoiceDetailPage
 
-# Path to test invoice file
-TEST_INVOICE_PATH = r"C:\Users\רים\ReemKartawe_repo\invoices_sample\invoice_Anthony_Jacobs_37594.pdf"
+# ✅ IMPORTANT:
+# In CI (Linux) you must provide a file that exists in the repo.
+# Use an env var with a default relative path inside the project.
+TEST_INVOICE_PATH = os.getenv(
+    "TEST_INVOICE_PATH",
+    "invoices_sample/invoice_Anthony_Jacobs_37594.pdf"
+)
 
-from playwright.sync_api import sync_playwright
-import os
+APP_URL = os.getenv("APP_URL", "http://localhost:3000")
+HEADLESS = os.getenv("HEADLESS", "true").lower() == "true"
 
-headless = os.getenv('HEADLESS', 'false').lower() == 'true'
-browser = playwright.chromium.launch(headless=headless)
-page = browser.new_page()
-APP_URL = os.getenv('APP_URL', 'http://localhost:3000')
 
 class TestInvParserUI(unittest.TestCase):
     """Test suite for Invoice Parser UI using Page Object Model."""
@@ -22,7 +22,7 @@ class TestInvParserUI(unittest.TestCase):
     def setUpClass(cls):
         """Set up the browser once for all tests in this class."""
         cls.playwright = sync_playwright().start()
-        cls.browser = cls.playwright.chromium.launch(headless=headless)  # headless=False to see the browser
+        cls.browser = cls.playwright.chromium.launch(headless=HEADLESS)
 
     @classmethod
     def tearDownClass(cls):
@@ -31,14 +31,14 @@ class TestInvParserUI(unittest.TestCase):
         cls.playwright.stop()
 
     def setUp(self):
-        """Set up before each test method."""
         self.page = self.browser.new_page(viewport={"width": 1280, "height": 720})
 
     def tearDown(self):
-        """Clean up after each test method."""
-        self.page.evaluate("localStorage.clear()")
+        try:
+            self.page.evaluate("localStorage.clear()")
+        except Exception:
+            pass
         self.page.close()
-    
 
     def test_page_title(self):
         """Test complete invoice workflow: login, upload, search, and view detail."""
@@ -46,8 +46,8 @@ class TestInvParserUI(unittest.TestCase):
         if not os.path.exists(TEST_INVOICE_PATH):
             self.skipTest(f"Test invoice file not found at: {TEST_INVOICE_PATH}")
 
-        # Initialize page objects
-        login_page = LoginPage(self.page)
+        # Initialize page objects (make sure your POM uses APP_URL)
+        login_page = LoginPage(self.page, base_url=APP_URL)
         dashboard_page = DashboardPage(self.page)
         upload_page = UploadPage(self.page)
         invoices_page = InvoicesPage(self.page)
@@ -75,13 +75,6 @@ class TestInvParserUI(unittest.TestCase):
 
         # Step 7: Verify we're on invoice detail page
         invoice_detail_page.wait_for_invoice_detail_page()
-
-
-
-
-
-
-
 
 
 if __name__ == "__main__":
