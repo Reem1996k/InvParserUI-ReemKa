@@ -57,4 +57,4 @@ jobs:
         HEADLESS: true
         APP_URL: https://lichenlike-kellee-autocratically.ngrok-free.dev
       run: |
-        pytest tests/ -v
+        pytest test/ -v
